@@ -34,7 +34,7 @@ public class Driver {
 		board.print();
 		System.out.println("bScore:" + board.bScore + " uScore:" + board.uScore() + "\n");
 		
-		int it_length = 10000;
+		int it_length = 50000;
 		for (int i = 0; i < it_length; i++) {
 			board = genAlternative(board, 20);
 			if ((i % (it_length/25)) == 0) {
