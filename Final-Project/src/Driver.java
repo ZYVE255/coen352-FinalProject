@@ -6,6 +6,8 @@ import java.util.Random;
 public class Driver {
 
 	public static void main(String[] args) {
+		
+		String[] keys = {"#","A","B","7","D","E","F","3","2","J","K","L","M","O","P","S","T","Y"};
 		int size = 10;
 		//Initialize Board and Tile array
 		Board board = new Board(size);
@@ -32,6 +34,8 @@ public class Driver {
 		board.print();
 		System.out.println("bScore:" + board.bScore + " uScore:" + board.uScore() + "\n");
 		
+		board.fullPrint(keys);
+		
 		int max_it = 100000;
 		for (int i = 0; i < max_it; i++) {
 			board = genAlt(board, 20);
@@ -39,6 +43,7 @@ public class Driver {
 		
 		board.print();
 		System.out.println("bScore:" + board.bScore + " uScore:" + board.uScore() + "\n");
+		board.fullPrint(keys);
 	}
 	
 	//Generates an initial board based on a set of tiles using smartInsert
@@ -64,7 +69,7 @@ public class Driver {
 	public static Board genAlt(Board board, int p) {
 		Tile[] tiles = new Tile[p];
 		Board altBoard = new Board(board);
-		Random rand = new Random();
+		Random rand = new Random(System.currentTimeMillis());
 		
 		int size = board.size;
 		int tileIndex = 0;

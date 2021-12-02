@@ -257,10 +257,10 @@ public class Board {
 	//Returns the potential score of tile t insert at [c][r] with rot rotation
 	public int insertTest(int c, int r, Tile t, int rot) {
 		
-		int matchScore = 1;
+		int matchScore = 2;
 		int edgeScore = 100;
-		int misScore = -1;
-		int nullScore = 0;
+		int misScore = 0;
+		int nullScore = 1;
 		
 		Tile tile = new Tile(t);
 		tile.rotateCW(rot);
@@ -328,4 +328,30 @@ public class Board {
 		return score;
 	}
 	
+	public void fullPrint(String[] keys) {
+		for (int r = 0; r < size; r++) {
+			String outputCeil = "-";
+			String outputTop = "|";
+			String outputMid = "|";
+			String outputBot = "|";
+				
+			for (int c = 0; c < size; c++) {
+				if (tiles[c][r].up == -1) {
+					outputCeil += "----";
+					outputTop += "   |";
+					outputMid += "   |";
+					outputBot += "   |";
+				} else {
+					outputCeil += "----";
+					outputTop += " " + keys[tiles[c][r].up] + " |";
+					outputMid += keys[tiles[c][r].left] + " " + keys[tiles[c][r].right] + "|";
+					outputBot += " " + keys[tiles[c][r].down] + " |";
+				}
+			}
+			System.out.println(outputCeil);
+			System.out.println(outputTop);
+			System.out.println(outputMid);
+			System.out.println(outputBot);
+		}
+	}
 }
