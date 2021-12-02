@@ -41,15 +41,14 @@ public class Board {
 		int score = 0; //Stores temporary copy of tile's updated score
 		
 		if (tile.up == -1) { //Null tile case
-			score = 0;
 			bScore -= tScore[c][r]; //bScore = bScore - oldTileScore + newTileScore
-			tScore[c][r] = score;
-			bScore += score;
+			tScore[c][r] = 0;
+			return;
 		}
 		
 		//Check upper edge
-		if (c > 0) {
-			if (tile.up == tiles[c-1][r].down)
+		if (r > 0) {
+			if (tile.up == tiles[c][r-1].down)
 				score++;
 		} else { //Border check
 			if (tile.up == 0)
@@ -57,8 +56,8 @@ public class Board {
 		}
 		
 		//Check lower edge
-		if (c < size-1) {
-			if (tile.down == tiles[c+1][r].up)
+		if (r < size-1) {
+			if (tile.down == tiles[c][r+1].up)
 				score++;
 		} else { //Border check
 			if (tile.down == 0)
@@ -66,8 +65,8 @@ public class Board {
 		}
 		
 		//Check left edge
-		if (r > 0) {
-			if (tile.left == tiles[c][r-1].right)
+		if (c > 0) {
+			if (tile.left == tiles[c-1][r].right)
 				score++;
 		} else { //Border check
 			if (tile.left == 0)
@@ -75,8 +74,8 @@ public class Board {
 		}
 		
 		//Check right edge
-		if (r < size-1) {
-			if (tile.right == tiles[c][r+1].left)
+		if (c < size-1) {
+			if (tile.right == tiles[c+1][r].left)
 				score++;
 		} else { //Border check
 			if (tile.right == 0)
@@ -112,7 +111,7 @@ public class Board {
 	
 	//Insert without rotation
 	public void insert(int c, int r, Tile t) {
-		this.insert(c, r, t, 0);;
+		this.insert(c, r, t, 0);
 	}
 	
 	//Intelligently inserts tile
@@ -235,9 +234,9 @@ public class Board {
 	
 	//Prints the tile scores in a nxn grid
 	public void print() {
-		for (int c = 0; c < size; c++) {
+		for (int r = 0; r < size; r++) {
 			String line = "";
-			for (int r = 0; r < size; r++) {
+			for (int c = 0; c < size; c++) {
 				line += tScore[c][r];
 			}
 			System.out.println(line);
@@ -271,8 +270,8 @@ public class Board {
 			return 0;
 		
 		//Check upper edge
-		if (c > 0) {
-			int temp = tiles[c-1][r].down;
+		if (r > 0) {
+			int temp = tiles[c][r-1].down;
 			if (tile.up == temp)
 				score += matchScore;
 			else if (temp == -1)
@@ -285,8 +284,8 @@ public class Board {
 		}
 		
 		//Check lower edge
-		if (c < size-1) {
-			int temp = tiles[c+1][r].up;
+		if (r < size-1) {
+			int temp = tiles[c][r+1].up;
 			if (tile.down == temp)
 				score += matchScore;
 			else if (temp == -1)
@@ -299,8 +298,8 @@ public class Board {
 		}
 		
 		//Check left edge
-		if (r > 0) {
-			int temp = tiles[c][r-1].right;
+		if (c > 0) {
+			int temp = tiles[c-1][r].right;
 			if (tile.left == temp)
 				score += matchScore;
 			else if (temp == -1)
@@ -313,8 +312,8 @@ public class Board {
 		}
 		
 		//Check right edge
-		if (r < size-1) {
-			int temp = tiles[c][r+1].left;
+		if (c < size-1) {
+			int temp = tiles[c+1][r].left;
 			if (tile.right == temp)
 				score += matchScore;
 			else if (temp == -1)

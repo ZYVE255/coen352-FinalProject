@@ -26,43 +26,25 @@ public class Driver {
 			}
 		} catch (FileNotFoundException e) { }
 		
+		
+		
 		genInitialSmart(board, tiles);
 		board.print();
 		System.out.println("bScore:" + board.bScore + " uScore:" + board.uScore() + "\n");
-		int c = 0;
-		int r = 9;
-		System.out.println(board.tiles[c][r].up);
-		System.out.println(board.tiles[c][r].left + " " + board.tiles[c][r].right);
-		System.out.println(board.tiles[c][r].down);
 		
-		/*
-		board.print();
-		System.out.println("bScore:" + board.bScore + " uScore:" + board.uScore() + "\n");
-		
-		smartInsert(board, tiles);
-		
-		board.print();
-		System.out.println("bScore:" + board.bScore + " uScore:" + board.uScore() + "\n");
-		
-		int it_length = 50000;
-		for (int i = 0; i < it_length; i++) {
-			board = genAlternative(board, 20);
-			if ((i % (it_length/25)) == 0) {
-				int percent = i*100/it_length;
-				System.out.println(percent + "%");
-			}
-			
+		int max_it = 100000;
+		for (int i = 0; i < max_it; i++) {
+			board = genAlt(board, 20);
 		}
+		
 		board.print();
 		System.out.println("bScore:" + board.bScore + " uScore:" + board.uScore() + "\n");
-		*/
 	}
 	
+	//Generates an initial board based on a set of tiles using smartInsert
 	public static void genInitialSmart(Board board, Tile[] tiles) {
-		for (Tile t : tiles) {
+		for (Tile t : tiles)
 			board.smartInsert(t);
-			//board.print();
-		}
 	}
 	
 	//Generate an initial board via random placement
@@ -78,6 +60,42 @@ public class Driver {
 		}
 	}
 	
+	//Generate an alternate board with p tiles swapped
+	public static Board genAlt(Board board, int p) {
+		Tile[] tiles = new Tile[p];
+		Board altBoard = new Board(board);
+		Random rand = new Random();
+		
+		int size = board.size;
+		int tileIndex = 0;
+		while (p > 0) {
+			int maxAttempt = 0;
+			while (maxAttempt < 100) {
+				int c = rand.nextInt(size);
+				int r = rand.nextInt(size);
+				if (altBoard.tiles[c][r].up != -1 && altBoard.tScore[c][r] != 4) {
+					tiles[tileIndex++] = altBoard.remove(c, r);
+					break;
+				}
+				maxAttempt++;
+			}
+			p--;
+		}
+		
+		for (Tile t : tiles) {
+			altBoard.smartInsert(t);
+		}
+		
+		//System.out.println("b:" + board.bScore + " a:" + altBoard.bScore);
+		
+		if (altBoard.bScore > board.bScore)
+			return altBoard;
+		return board;
+	}
+	
+	//Legacy
+	
+	/*
 	//Semi-intelligently generate an initial board
 	public static void smartInsert(Board board, Tile[] tiles) {
 		int size = board.size;
@@ -111,7 +129,7 @@ public class Driver {
 	}
 	
 	//Type: 0-center, 1-edges, 2-corners
-	public static Board genAlternative(Board board, int p) {
+	public static Board genAlternativeOld(Board board, int p) {
 		Board tempBoard = new Board(board);
 		Random rand = new Random();
 		Tile[] tiles = new Tile[p];
@@ -137,5 +155,5 @@ public class Driver {
 			return tempBoard;
 		return board;
 	}
-	
+	*/
 }
