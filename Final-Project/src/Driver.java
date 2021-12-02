@@ -26,6 +26,16 @@ public class Driver {
 			}
 		} catch (FileNotFoundException e) { }
 		
+		genInitialSmart(board, tiles);
+		board.print();
+		System.out.println("bScore:" + board.bScore + " uScore:" + board.uScore() + "\n");
+		int c = 0;
+		int r = 9;
+		System.out.println(board.tiles[c][r].up);
+		System.out.println(board.tiles[c][r].left + " " + board.tiles[c][r].right);
+		System.out.println(board.tiles[c][r].down);
+		
+		/*
 		board.print();
 		System.out.println("bScore:" + board.bScore + " uScore:" + board.uScore() + "\n");
 		
@@ -45,7 +55,14 @@ public class Driver {
 		}
 		board.print();
 		System.out.println("bScore:" + board.bScore + " uScore:" + board.uScore() + "\n");
-		
+		*/
+	}
+	
+	public static void genInitialSmart(Board board, Tile[] tiles) {
+		for (Tile t : tiles) {
+			board.smartInsert(t);
+			//board.print();
+		}
 	}
 	
 	//Generate an initial board via random placement

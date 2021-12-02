@@ -115,6 +115,116 @@ public class Board {
 		this.insert(c, r, t, 0);;
 	}
 	
+	//Intelligently inserts tile
+	public void smartInsert(Tile t) {
+		
+		//Find tile type, eCount: 0-center, 1-edge, 2-corner
+		int eCount = 0;
+		if (t.up == 0)
+			eCount++;
+		if (t.down == 0)
+			eCount++;
+		if (t.left == 0)
+			eCount++;
+		if (t.right == 0)
+			eCount++;
+		
+		int tempScore = -1;
+		int rSelect = -1;
+		int cSelect = -1;
+		int rotation = 0;
+		
+		if (eCount == 2) {
+			//Insert in corner
+			for (int c = 0; c < size; c+=(size-1)) {
+				for (int r = 0; r < size; r+=(size-1)) {
+					if (this.tiles[c][r].up == -1) {
+						for (int z = 0; z < 360; z += 90) {
+							int testScore = this.insertTest(c, r, t, z);
+							if (testScore > tempScore) {
+								tempScore = testScore;
+								rSelect = r;
+								cSelect = c;
+								rotation = z;
+							}
+						}
+					}
+				}
+			}
+		} else if (eCount == 1) {
+			//Insert in edge
+			for (int num = 1; num < size-1; num++) {
+				if (this.tiles[num][0].up == -1) {
+					for (int z = 0; z < 360; z += 90) {
+						int testScore = this.insertTest(num, 0, t, z);
+						if (testScore > tempScore) {
+							tempScore = testScore;
+							rSelect = 0;
+							cSelect = num;
+							rotation = z;
+						}
+					}
+				}
+				if (this.tiles[num][size-1].up == -1) {
+					for (int z = 0; z < 360; z += 90) {
+						int testScore = this.insertTest(num, size-1, t, z);
+						if (testScore > tempScore) {
+							tempScore = testScore;
+							rSelect = size-1;
+							cSelect = num;
+							rotation = z;
+						}
+					}
+				}
+				if (this.tiles[0][num].up == -1) {
+					for (int z = 0; z < 360; z += 90) {
+						int testScore = this.insertTest(0, num, t, z);
+						if (testScore > tempScore) {
+							tempScore = testScore;
+							rSelect = num;
+							cSelect = 0;
+							rotation = z;
+						}
+					}
+				}
+				if (this.tiles[size-1][num].up == -1) {
+					for (int z = 0; z < 360; z += 90) {
+						int testScore = this.insertTest(size-1, num, t, z);
+						if (testScore > tempScore) {
+							tempScore = testScore;
+							rSelect = num;
+							cSelect = size-1;
+							rotation = z;
+						}
+					}
+				}
+				
+			}
+		} else if (eCount == 0) {
+			//Insert in center
+			for (int c = 1; c < size-1; c++) {
+				for (int r = 1; r < size-1; r++) {
+					if (this.tiles[c][r].up == -1) {
+						for (int z = 0; z < 360; z += 90) {
+							int testScore = this.insertTest(c, r, t, z);
+							if (testScore > tempScore) {
+								tempScore = testScore;
+								rSelect = r;
+								cSelect = c;
+								rotation = z;
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		if (cSelect == -1)
+			return;
+		Tile tile = new Tile(t);
+		this.insert(cSelect, rSelect, tile, rotation);
+	}
+	
 	//Removes and return tile [c][r]
 	public Tile remove(int c, int r) {
 		Tile tile = new Tile(tiles[c][r]);
@@ -147,6 +257,12 @@ public class Board {
 	
 	//Returns the potential score of tile t insert at [c][r] with rot rotation
 	public int insertTest(int c, int r, Tile t, int rot) {
+		
+		int matchScore = 1;
+		int edgeScore = 100;
+		int misScore = -1;
+		int nullScore = 0;
+		
 		Tile tile = new Tile(t);
 		tile.rotateCW(rot);
 		int score = 0;
@@ -156,38 +272,58 @@ public class Board {
 		
 		//Check upper edge
 		if (c > 0) {
-			if (tile.up == tiles[c-1][r].down)
-				score++;
+			int temp = tiles[c-1][r].down;
+			if (tile.up == temp)
+				score += matchScore;
+			else if (temp == -1)
+				score += nullScore;
+			else
+				score += misScore;
 		} else { //Border check
 			if (tile.up == 0)
-				score++;
+				score += edgeScore;
 		}
 		
 		//Check lower edge
 		if (c < size-1) {
-			if (tile.down == tiles[c+1][r].up)
-				score++;
+			int temp = tiles[c+1][r].up;
+			if (tile.down == temp)
+				score += matchScore;
+			else if (temp == -1)
+				score += nullScore;
+			else
+				score += misScore;
 		} else { //Border check
 			if (tile.down == 0)
-				score++;
+				score += edgeScore;
 		}
 		
 		//Check left edge
 		if (r > 0) {
-			if (tile.left == tiles[c][r-1].right)
-				score++;
+			int temp = tiles[c][r-1].right;
+			if (tile.left == temp)
+				score += matchScore;
+			else if (temp == -1)
+				score += nullScore;
+			else
+				score += misScore;
 		} else { //Border check
 			if (tile.left == 0)
-				score++;
+				score += edgeScore;
 		}
 		
 		//Check right edge
 		if (r < size-1) {
-			if (tile.right == tiles[c][r+1].left)
-				score++;
+			int temp = tiles[c][r+1].left;
+			if (tile.right == temp)
+				score += matchScore;
+			else if (temp == -1)
+				score += nullScore;
+			else
+				score += misScore;
 		} else { //Border check
 			if (tile.right == 0)
-				score++;
+				score += edgeScore;
 		}
 		
 		return score;
