@@ -8,6 +8,8 @@ public class Tile {
 	//Stores the rotation from initial orientation (0,90,180,270)
 	public int rotation;
 	
+	//-------------CONSTRUCTORS-------------
+	
 	/**
 	 * Creates a tile with specified edges
 	 * 
@@ -47,6 +49,9 @@ public class Tile {
 		left = t.left;
 		rotation = t.rotation;
 	}
+	
+	
+	//-------------OTHER-------------
 	
 	/**
 	 * Rotates a tile clockwise by multiples of 90deg

@@ -10,14 +10,14 @@ public class Driver {
 		String[] keys = {"#","A","B","C","D","E","F","G","H","J",
 						 "K","L","M","N","O","P","S","T","Y","Z",
 						 "1","2","3","4","5","6","7","8","9"};
-		int size = 16;
+		int size = 10;
 		//Initialize Board and Tile array
 		Board board = new Board(size);
 		Tile[] tiles = new Tile[size*size];
 		
 		//Populate tiles array
 		try {
-			File file = new File("test-set-e16");
+			File file = new File("test-set-10");
 			Scanner reader = new Scanner(file);
 			int i = 0;
 			while (reader.hasNextLine()) {
@@ -30,9 +30,9 @@ public class Driver {
 			}
 		} catch (FileNotFoundException e) { }
 		
-		board = solve(board, tiles, 300);
+		board = solve(board, tiles, 30);
 		board.print();
-		System.out.println("bScore:" + board.bScore + " uScore:" + board.uScore() + "\n");
+		System.out.println("bScore:" + board.bScore + " uScore:" + board.uScore() + " 3Score:" + board.threeScore() + "\n");
 		board.fullPrint(keys);
 		/*
 		genInitialSmart(board, tiles);
@@ -58,7 +58,7 @@ public class Driver {
 		System.out.println("Board initialized.");
 		genInitialSmart(board, tiles);
 		long currentTime = System.currentTimeMillis();
-		long endTime = currentTime + (time * 1000);
+		long endTime = currentTime + (time/2 * 1000);
 		int prevTime = 0;
 		System.out.println("Iterating board...");
 		while (System.currentTimeMillis() < endTime) {
@@ -69,8 +69,15 @@ public class Driver {
 				}
 				prevTime = timeRemaining;
 			}
-			board = genAlt(board, 30);
+			board = genAlt(board, 30, 1);
 		}
+		
+		currentTime = System.currentTimeMillis();
+		endTime = currentTime + (time/2 * 1000);
+		while (System.currentTimeMillis() < endTime) {
+			board = genAlt(board, 10, 0);
+		}
+		
 		System.out.println("Done.");
 		return board;
 	}
@@ -96,7 +103,7 @@ public class Driver {
 	}
 	
 	//Generate an alternate board with p tiles swapped
-	public static Board genAlt(Board board, int p) {
+	public static Board genAlt(Board board, int p, int type) {
 		Tile[] tiles = new Tile[p];
 		Board altBoard = new Board(board);
 		Random rand = new Random(System.currentTimeMillis());
@@ -122,10 +129,20 @@ public class Driver {
 		}
 		
 		//System.out.println("b:" + board.bScore + " a:" + altBoard.bScore);
-		
-		if (altBoard.bScore > board.bScore)
-			return altBoard;
-		return board;
+		switch (type) {
+			case 0: 
+				if (altBoard.bScore > board.bScore)
+					return altBoard;
+				return board;
+			case 1:
+				if (altBoard.threeScore() > board.threeScore())
+					return altBoard;
+				return board;
+			default:
+				if (altBoard.bScore > board.bScore)
+					return altBoard;
+				return board;
+		}
 	}
 	
 	//Generate an alternate board with p tiles swapped

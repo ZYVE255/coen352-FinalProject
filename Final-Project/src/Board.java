@@ -5,7 +5,13 @@ public class Board {
 	public int[][] tScore; //Stores the individual tile scores [col][row]
 	public Tile[][] tiles; //Stores the tiles [col][row]
 	
-	//Creates a nxn board of null tiles
+	//-------------CONSTRUCTORS-------------
+	
+	/**
+	 * Board constructor (creates an nxn board)
+	 * 
+	 * @param n Board width
+	 */
 	public Board(int n) {
 		size = n;
 		bScore = 0;
@@ -21,6 +27,11 @@ public class Board {
 		}
 	}
 	
+	/**
+	 * Board copy constructor
+	 * 
+	 * @param b Board to copy
+	 */
 	public Board(Board b) {
 		size = b.size;
 		bScore = b.bScore;
@@ -35,78 +46,17 @@ public class Board {
 		}
 	}
 	
-	/**
-	 * Updates the tScore and bScore based on a single tile
-	 * 
-	 * @param c Column of tile
-	 * @param r Row of tile
-	 */
-	private void updateSingle(int c, int r) {
-		Tile tile = tiles[c][r];
-		int score = 0; //Stores temporary copy of tile's updated score
-		
-		if (tile.up == -1) { //Null tile case
-			bScore -= tScore[c][r]; //bScore = bScore - oldTileScore + newTileScore
-			tScore[c][r] = 0;
-			return;
-		}
-		
-		//Check upper edge
-		if (r > 0) {
-			if (tile.up == tiles[c][r-1].down)
-				score++;
-		} else { //Border check
-			if (tile.up == 0)
-				score++;
-		}
-		
-		//Check lower edge
-		if (r < size-1) {
-			if (tile.down == tiles[c][r+1].up)
-				score++;
-		} else { //Border check
-			if (tile.down == 0)
-				score++;
-		}
-		
-		//Check left edge
-		if (c > 0) {
-			if (tile.left == tiles[c-1][r].right)
-				score++;
-		} else { //Border check
-			if (tile.left == 0)
-				score++;
-		}
-		
-		//Check right edge
-		if (c < size-1) {
-			if (tile.right == tiles[c+1][r].left)
-				score++;
-		} else { //Border check
-			if (tile.right == 0)
-				score++;
-		}
-		
-		bScore -= tScore[c][r]; //bScore = bScore - oldTileScore + newTileScore
-		tScore[c][r] = score;
-		bScore += score;
-	}
 	
-	//Updates tScore and bScore based on a tile c,r and its border tiles
-	public void update(int c, int r) {
-		updateSingle(c,r);
-		
-		if (c > 0)
-			updateSingle(c-1,r);
-		if (c < size-1)
-			updateSingle(c+1,r);
-		if (r > 0)
-			updateSingle(c,r-1);
-		if (r < size-1)
-			updateSingle(c,r+1);
-	}
-
-	//Insert tile t at position [c][r] with rotation rot in deg
+	//-------------INSERTS AND REMOVES-------------
+	
+	/**
+	 * Inserts a tile into the board at a given position with a specified rotation
+	 * 
+	 * @param c Insert column
+	 * @param r Insert row
+	 * @param t Tile to insert
+	 * @param rot Insert rotation
+	 */
 	public void insert(int c, int r, Tile t, int rot) {
 		Tile tile = new Tile(t);
 		tile.rotateCW(rot);
@@ -114,12 +64,22 @@ public class Board {
 		this.update(c,r);
 	}
 	
-	//Insert without rotation
+	/**
+	 * Inserts a tile into the board at a given position with no rotation
+	 * 
+	 * @param c Insert column
+	 * @param r Insert row
+	 * @param t Tile to insert
+	 */
 	public void insert(int c, int r, Tile t) {
 		this.insert(c, r, t, 0);
 	}
 	
-	//Intelligently inserts tile
+	/**
+	 * Inserts a tile into its optimal board location
+	 * 
+	 * @param t Tile to insert
+	 */
 	public void smartInsert(Tile t) {
 		
 		//Find tile type, eCount: 0-center, 1-edge, 2-corner
@@ -229,26 +189,107 @@ public class Board {
 		this.insert(cSelect, rSelect, tile, rotation);
 	}
 	
-	//Removes and return tile [c][r]
+	/**
+	 * Removes and returns a tile at a specified location
+	 * 
+	 * @param c Column of tile
+	 * @param r Row of tile
+	 * @return Tile removed
+	 */
 	public Tile remove(int c, int r) {
 		Tile tile = new Tile(tiles[c][r]);
 		tiles[c][r] = new Tile(); //Places null tile in old position
 		this.update(c, r);
 		return tile;
 	}
+		
 	
-	//Prints the tile scores in a nxn grid
-	public void print() {
-		for (int r = 0; r < size; r++) {
-			String line = "";
-			for (int c = 0; c < size; c++) {
-				line += tScore[c][r];
-			}
-			System.out.println(line);
+	//-------------UPDATES-------------
+	
+	/**
+	 * Updates the tScore and bScore based on a single tile
+	 * 
+	 * @param c Column of tile
+	 * @param r Row of tile
+	 */
+	private void updateSingle(int c, int r) {
+		Tile tile = tiles[c][r];
+		int score = 0; //Stores temporary copy of tile's updated score
+		
+		if (tile.up == -1) { //Null tile case
+			bScore -= tScore[c][r]; //bScore = bScore - oldTileScore + newTileScore
+			tScore[c][r] = 0;
+			return;
 		}
+		
+		//Check upper edge
+		if (r > 0) {
+			if (tile.up == tiles[c][r-1].down)
+				score++;
+		} else { //Border check
+			if (tile.up == 0)
+				score++;
+		}
+		
+		//Check lower edge
+		if (r < size-1) {
+			if (tile.down == tiles[c][r+1].up)
+				score++;
+		} else { //Border check
+			if (tile.down == 0)
+				score++;
+		}
+		
+		//Check left edge
+		if (c > 0) {
+			if (tile.left == tiles[c-1][r].right)
+				score++;
+		} else { //Border check
+			if (tile.left == 0)
+				score++;
+		}
+		
+		//Check right edge
+		if (c < size-1) {
+			if (tile.right == tiles[c+1][r].left)
+				score++;
+		} else { //Border check
+			if (tile.right == 0)
+				score++;
+		}
+		
+		bScore -= tScore[c][r]; //bScore = bScore - oldTileScore + newTileScore
+		tScore[c][r] = score;
+		bScore += score;
 	}
 	
-	//Returns the 'ultimate' score of the board (computed by iteration), for debugging
+	/**
+	 * Updates tScore and bScore based on a tile and its adjacent tiles
+	 * 
+	 * @param c Column of tile
+	 * @param r Row of tile
+	 */
+	public void update(int c, int r) {
+		updateSingle(c,r);
+		
+		if (c > 0)
+			updateSingle(c-1,r);
+		if (c < size-1)
+			updateSingle(c+1,r);
+		if (r > 0)
+			updateSingle(c,r-1);
+		if (r < size-1)
+			updateSingle(c,r+1);
+	}
+
+	
+	//-------------BOARD SCORES-------------
+	
+	/**
+	 * Returns the ultimate score of the board (equivalent to bScore)
+	 * 
+	 * @return Total number of matching edges
+	 */
 	public int uScore() {
 		int score = 0;
 		for (int c = 0; c < size; c++) {
@@ -259,7 +300,43 @@ public class Board {
 		return score;
 	}
 	
-	//Returns the potential score of tile t insert at [c][r] with rot rotation
+	/**
+	 * Returns the number of perfect 3x3s
+	 * 
+	 * @return Total number of perfect 3x3 segments of the board
+	 */
+	public int threeScore() {
+		int score = 0;
+		for (int r = 1; r < size-1; r++) {
+			for (int c = 1; c < size-1; c++) {
+				if ((tiles[c][r].up == tiles[c][r-1].down) && //Check center piece
+					(tiles[c][r].down == tiles[c][r+1].up) &&
+					(tiles[c][r].right == tiles[c+1][r].left) && 
+					(tiles[c][r].left == tiles[c-1][r].right) &&
+					(tiles[c][r-1].left == tiles[c-1][r-1].right) && //Check upper piece
+					(tiles[c][r-1].right == tiles[c+1][r-1].left) &&
+					(tiles[c][r+1].left == tiles[c-1][r+1].right) && //Check lower piece
+					(tiles[c][r+1].right == tiles[c+1][r+1].left) &&
+					(tiles[c-1][r].up == tiles[c-1][r-1].down) && //Check left piece
+					(tiles[c-1][r].down == tiles[c-1][r+1].up) &&
+					(tiles[c+1][r].up == tiles[c+1][r-1].down) && //Check right piece
+					(tiles[c+1][r].down == tiles[c+1][r+1].up)) {
+					score++;
+				}
+			}
+		}
+		return score;
+	}
+	
+	/**
+	 * Tests the insert of a tile at a location in the board
+	 * 
+	 * @param c Insert test column
+	 * @param r Insert test row
+	 * @param t Test tile
+	 * @param rot Test tile rotation
+	 * @return The potential score of the tile if placed in the location
+	 */
 	public int insertTest(int c, int r, Tile t, int rot) {
 		
 		int matchScore = 2;
@@ -333,6 +410,27 @@ public class Board {
 		return score;
 	}
 	
+	
+	//-------------PRINTS-------------
+	
+	/**
+	 * Prints the tile scores of the board
+	 */
+	public void print() {
+		for (int r = 0; r < size; r++) {
+			String line = "";
+			for (int c = 0; c < size; c++) {
+				line += tScore[c][r];
+			}
+			System.out.println(line);
+		}
+	}
+	
+	/**
+	 * Prints the current board
+	 * 
+	 * @param keys The keys used to display the board
+	 */
 	public void fullPrint(String[] keys) {
 		for (int r = 0; r < size; r++) {
 			String outputCeil = "-";
