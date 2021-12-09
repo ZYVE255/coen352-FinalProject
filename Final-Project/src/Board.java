@@ -35,7 +35,12 @@ public class Board {
 		}
 	}
 	
-	//Updates tScore and bScore based on a single tile
+	/**
+	 * Updates the tScore and bScore based on a single tile
+	 * 
+	 * @param c Column of tile
+	 * @param r Row of tile
+	 */
 	private void updateSingle(int c, int r) {
 		Tile tile = tiles[c][r];
 		int score = 0; //Stores temporary copy of tile's updated score

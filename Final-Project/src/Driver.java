@@ -7,15 +7,17 @@ public class Driver {
 
 	public static void main(String[] args) {
 		
-		String[] keys = {"#","A","B","7","D","E","F","3","2","J","K","L","M","O","P","S","T","Y"};
-		int size = 10;
+		String[] keys = {"#","A","B","C","D","E","F","G","H","J",
+						 "K","L","M","N","O","P","S","T","Y","Z",
+						 "1","2","3","4","5","6","7","8","9"};
+		int size = 16;
 		//Initialize Board and Tile array
 		Board board = new Board(size);
 		Tile[] tiles = new Tile[size*size];
 		
 		//Populate tiles array
 		try {
-			File file = new File("test-set");
+			File file = new File("test-set-e16");
 			Scanner reader = new Scanner(file);
 			int i = 0;
 			while (reader.hasNextLine()) {
@@ -28,23 +30,51 @@ public class Driver {
 			}
 		} catch (FileNotFoundException e) { }
 		
-		
-		
+		board = solve(board, tiles, 300);
+		board.print();
+		System.out.println("bScore:" + board.bScore + " uScore:" + board.uScore() + "\n");
+		board.fullPrint(keys);
+		/*
 		genInitialSmart(board, tiles);
 		board.print();
 		System.out.println("bScore:" + board.bScore + " uScore:" + board.uScore() + "\n");
 		
-		board.fullPrint(keys);
+		//board.fullPrint(keys);
 		
 		int max_it = 100000;
 		for (int i = 0; i < max_it; i++) {
-			board = genAlt(board, 20);
+			board = genAlt(board, 30);
+			//board = nPerfReshuffle(board);
 		}
 		
 		board.print();
 		System.out.println("bScore:" + board.bScore + " uScore:" + board.uScore() + "\n");
-		board.fullPrint(keys);
+		//board.fullPrint(keys);
+		*/
 	}
+	
+	
+	public static Board solve(Board board, Tile[] tiles, int time) {
+		System.out.println("Board initialized.");
+		genInitialSmart(board, tiles);
+		long currentTime = System.currentTimeMillis();
+		long endTime = currentTime + (time * 1000);
+		int prevTime = 0;
+		System.out.println("Iterating board...");
+		while (System.currentTimeMillis() < endTime) {
+			int timeRemaining = (int)(endTime - System.currentTimeMillis())/1000;
+			if (timeRemaining % 10 == 0) {
+				if (prevTime != timeRemaining) {
+					System.out.println("Time reaining: " + timeRemaining + "s");
+				}
+				prevTime = timeRemaining;
+			}
+			board = genAlt(board, 30);
+		}
+		System.out.println("Done.");
+		return board;
+	}
+	
 	
 	//Generates an initial board based on a set of tiles using smartInsert
 	public static void genInitialSmart(Board board, Tile[] tiles) {
@@ -98,67 +128,31 @@ public class Driver {
 		return board;
 	}
 	
-	//Legacy
-	
-	/*
-	//Semi-intelligently generate an initial board
-	public static void smartInsert(Board board, Tile[] tiles) {
+	//Generate an alternate board with p tiles swapped
+	public static Board nPerfReshuffle(Board board) {
 		int size = board.size;
-		for (Tile t : tiles) {
-			int c_select = -1;
-			int r_select = -1;
-			int tempScore = -1;
-			int rot = 0;
-			for (int c = 0; c < size; c++) {
-				for (int r = 0; r < size; r++) {
-					if (board.tiles[c][r].up == -1) {
-						for (int z = 0; z < 360; z += 90) {
-							int testScore = board.insertTest(c, r, t, z);
-							if (testScore > tempScore) {
-								tempScore = testScore;
-								r_select = r;
-								c_select = c;
-								rot = z;
-							}
-						}
-					}
+		Tile[] tiles = new Tile[size*size];
+		Board altBoard = new Board(board);
+		
+		int tileIndex = 0;
+		for (int c = 0; c < size; c++) {
+			for (int r = 0; r < size; r++) {
+				if (altBoard.tScore[c][r] != 4) {
+					tiles[tileIndex++] = altBoard.remove(c, r);
 				}
 			}
-			
-			//System.out.println("row:" + r_select + " col:" + c_select + " rot:" + rot + " score:" + tempScore);
-			if (c_select == -1)
-				break;
-			Tile tile = new Tile(t);
-			board.insert(c_select, r_select, tile, rot);
-		}
-	}
-	
-	//Type: 0-center, 1-edges, 2-corners
-	public static Board genAlternativeOld(Board board, int p) {
-		Board tempBoard = new Board(board);
-		Random rand = new Random();
-		Tile[] tiles = new Tile[p];
-		int size = board.size;
-		int i = 0;
-		while (p > 0) {
-			int j = 0;
-			while (j < 100) {
-				int c = rand.nextInt(size);
-				int r = rand.nextInt(size);
-				if (tempBoard.tiles[c][r].up != -1 && tempBoard.tScore[c][r] != 4) {
-					tiles[i++] = tempBoard.remove(c, r);
-					break;
-				}
-				j++;
-			}
-			p--;
 		}
 		
-		smartInsert(tempBoard, tiles);
-		//System.out.println(tempBoard.bScore + " " + board.bScore);
-		if (tempBoard.bScore > board.bScore)
-			return tempBoard;
+		for (int t = tileIndex - 1; t >= 0; t--) {
+			if (tiles[t].isNull())
+				break;
+			altBoard.smartInsert(tiles[t]);
+		}
+		
+		//System.out.println("b:" + board.bScore + " a:" + altBoard.bScore);
+		
+		if (altBoard.bScore > board.bScore)
+			return altBoard;
 		return board;
 	}
-	*/
 }
