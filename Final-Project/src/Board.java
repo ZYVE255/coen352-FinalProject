@@ -456,5 +456,10 @@ public class Board {
 			System.out.println(outputMid);
 			System.out.println(outputBot);
 		}
+		String outputCeil = "-";
+		for (int c = 0; c < size; c++) {
+			outputCeil += "----";
+		}
+		System.out.println(outputCeil);
 	}
 }

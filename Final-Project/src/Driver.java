@@ -1,5 +1,6 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.util.Scanner;
 import java.util.Random;
 
@@ -7,17 +8,21 @@ public class Driver {
 
 	public static void main(String[] args) {
 		
+		//Used for board display
 		String[] keys = {"#","A","B","C","D","E","F","G","H","J",
 						 "K","L","M","N","O","P","S","T","Y","Z",
 						 "1","2","3","4","5","6","7","8","9"};
-		int size = 10;
+		
+		
 		//Initialize Board and Tile array
+		int size = 16;
 		Board board = new Board(size);
 		Tile[] tiles = new Tile[size*size];
 		
+		
 		//Populate tiles array
 		try {
-			File file = new File("test-set-10");
+			File file = new File("test-set-16");
 			Scanner reader = new Scanner(file);
 			int i = 0;
 			while (reader.hasNextLine()) {
@@ -30,7 +35,13 @@ public class Driver {
 			}
 		} catch (FileNotFoundException e) { }
 		
-		board = solve(board, tiles, 30);
+		
+		//board = solve(board, tiles, 30);
+		long beforeUsedMem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+		board = solveIterations(board, tiles, 1, 0, 10000, 10000, 40, 15, false);
+		long afterUsedMem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+		long actualMemUsed = afterUsedMem - beforeUsedMem;
+		System.out.println(actualMemUsed/1000000);
 		board.print();
 		System.out.println("bScore:" + board.bScore + " uScore:" + board.uScore() + " 3Score:" + board.threeScore() + "\n");
 		board.fullPrint(keys);
@@ -82,14 +93,65 @@ public class Driver {
 		return board;
 	}
 	
+	public static Board solveIterations(Board board, Tile[] tiles, int p1_type, int p2_type, 
+			int p1_its, int p2_its, int p1_swap, int p2_swap, boolean export) {
+		
+		int[] scores = new int[p1_its + p2_its];
+		long start = System.currentTimeMillis();
+		genInitialSmart(board, tiles);
+		System.out.println("Board initialized.");
+		System.out.println("Initial matching edges: " + scoreToEdges(board.bScore, board.size));
+		System.out.println("Iterating phase 1...");
+		for (int it = 0; it < p1_its; it++) {
+			board = genAlt(board, p1_swap, p1_type);
+			scores[it] = board.bScore;
+		}
+		System.out.println("Phase 1 matching edges: " + scoreToEdges(board.bScore, board.size));
+		System.out.println("Iterating phase 2...");
+		for (int it = 0; it < p2_its; it++) {
+			board = genAlt(board, p2_swap, p2_type);
+			scores[p1_its + it] = board.bScore;
+		}
+		long end = System.currentTimeMillis();
+		System.out.println("Phase 2 matching edges: " + scoreToEdges(board.bScore, board.size));
+		System.out.println("Done.");
+		System.out.println("Run time (ms): " + (end-start));
+		System.out.println("Final matching edges: " + scoreToEdges(board.bScore, board.size));
+		
+		if (export) {
+			try {
+				FileWriter writer = new FileWriter("testExport.csv");
 	
-	//Generates an initial board based on a set of tiles using smartInsert
+				for (int i = 0; i < scores.length; i++) {
+				    writer.append(String.valueOf(scores[i]));
+				    writer.append("\n");
+				}
+				writer.close();
+			} catch (Exception e) {
+			}
+		}
+		
+		return board;
+	}
+	
+	
+	/**
+	 * Generate an initial board based on smart insertion
+	 * 
+	 * @param board Initial board
+	 * @param tiles Tile set to insert
+	 */
 	public static void genInitialSmart(Board board, Tile[] tiles) {
 		for (Tile t : tiles)
 			board.smartInsert(t);
 	}
 	
-	//Generate an initial board via random placement
+	/**
+	 * Generates an initial board randomly
+	 * 
+	 * @param board Input board
+	 * @param tiles Input tile set
+	 */
 	public static void genInitialRandom(Board board, Tile[] tiles) {
 		int size = board.size;
 		int t = 0;
@@ -102,7 +164,14 @@ public class Driver {
 		}
 	}
 	
-	//Generate an alternate board with p tiles swapped
+	/**
+	 * Generates an alternate board
+	 * 
+	 * @param board Input board
+	 * @param p Total tile swaps
+	 * @param type Type of selection criterion (0:Total matched edges , 1:Perfect 3x3s )
+	 * @return Alternate board or initial board based on selection criterion
+	 */
 	public static Board genAlt(Board board, int p, int type) {
 		Tile[] tiles = new Tile[p];
 		Board altBoard = new Board(board);
@@ -130,7 +199,7 @@ public class Driver {
 		
 		//System.out.println("b:" + board.bScore + " a:" + altBoard.bScore);
 		switch (type) {
-			case 0: 
+			case 0:
 				if (altBoard.bScore > board.bScore)
 					return altBoard;
 				return board;
@@ -145,7 +214,12 @@ public class Driver {
 		}
 	}
 	
-	//Generate an alternate board with p tiles swapped
+	/**
+	 * Generates an alternate board by swapping all non-perfect tiles
+	 * 
+	 * @param board Input board
+	 * @return Alternate board or initial board based on total correct tiles
+	 */
 	public static Board nPerfReshuffle(Board board) {
 		int size = board.size;
 		Tile[] tiles = new Tile[size*size];
@@ -171,5 +245,9 @@ public class Driver {
 		if (altBoard.bScore > board.bScore)
 			return altBoard;
 		return board;
+	}
+
+	public static int scoreToEdges(int score, int size) {
+		return (score - (size*size))/2;
 	}
 }
