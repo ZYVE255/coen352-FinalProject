@@ -22,7 +22,7 @@ public class Driver {
 		
 		//Populate tiles array
 		try {
-			File file = new File("test-set-16");
+			File file = new File("test-set-e16");
 			Scanner reader = new Scanner(file);
 			int i = 0;
 			while (reader.hasNextLine()) {
@@ -35,64 +35,30 @@ public class Driver {
 			}
 		} catch (FileNotFoundException e) { }
 		
-		
-		//board = solve(board, tiles, 30);
-		long beforeUsedMem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-		board = solveIterations(board, tiles, 1, 0, 10000, 10000, 40, 15, false);
-		long afterUsedMem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-		long actualMemUsed = afterUsedMem - beforeUsedMem;
-		System.out.println(actualMemUsed/1000000);
-		board.print();
-		System.out.println("bScore:" + board.bScore + " uScore:" + board.uScore() + " 3Score:" + board.threeScore() + "\n");
-		board.fullPrint(keys);
-		/*
-		genInitialSmart(board, tiles);
-		board.print();
-		System.out.println("bScore:" + board.bScore + " uScore:" + board.uScore() + "\n");
-		
-		//board.fullPrint(keys);
-		
-		int max_it = 100000;
-		for (int i = 0; i < max_it; i++) {
-			board = genAlt(board, 30);
-			//board = nPerfReshuffle(board);
-		}
-		
-		board.print();
-		System.out.println("bScore:" + board.bScore + " uScore:" + board.uScore() + "\n");
-		//board.fullPrint(keys);
-		*/
+		//Solve the puzzle!
+		//Feel free to mess with parameters (Read function documentation below)
+		board = solveIterations(board, tiles, 1, 0, 100000, 100000, 40, 15, false);
+		board.print(); //Prints tile score map
+		System.out.println("bScore:" + board.bScore + " 3Score:" + board.threeScore()); //Prints scores
+		System.out.println("Matched edges: " + scoreToEdges(board.bScore, size) + "\n"); //Prints matching edges
+		board.fullPrint(keys); //Prints the actual board
 	}
 	
 	
-	public static Board solve(Board board, Tile[] tiles, int time) {
-		System.out.println("Board initialized.");
-		genInitialSmart(board, tiles);
-		long currentTime = System.currentTimeMillis();
-		long endTime = currentTime + (time/2 * 1000);
-		int prevTime = 0;
-		System.out.println("Iterating board...");
-		while (System.currentTimeMillis() < endTime) {
-			int timeRemaining = (int)(endTime - System.currentTimeMillis())/1000;
-			if (timeRemaining % 10 == 0) {
-				if (prevTime != timeRemaining) {
-					System.out.println("Time reaining: " + timeRemaining + "s");
-				}
-				prevTime = timeRemaining;
-			}
-			board = genAlt(board, 30, 1);
-		}
-		
-		currentTime = System.currentTimeMillis();
-		endTime = currentTime + (time/2 * 1000);
-		while (System.currentTimeMillis() < endTime) {
-			board = genAlt(board, 10, 0);
-		}
-		
-		System.out.println("Done.");
-		return board;
-	}
-	
+	/**
+	 * More customizable solver for the board
+	 * 
+	 * @param board Board object
+	 * @param tiles Tile set
+	 * @param p1_type Phase 1 acceptance criteria
+	 * @param p2_type Phase 2 acceptance criteria
+	 * @param p1_its Phase 1 iterations
+	 * @param p2_its Phase 2 iterations
+	 * @param p1_swap Phase 1 tile swaps
+	 * @param p2_swap Phase 2 tile swaps
+	 * @param export If set to true will export board score to a .csv, used for data visualization
+	 * @return Final board
+	 */
 	public static Board solveIterations(Board board, Tile[] tiles, int p1_type, int p2_type, 
 			int p1_its, int p2_its, int p1_swap, int p2_swap, boolean export) {
 		
@@ -146,6 +112,7 @@ public class Driver {
 			board.smartInsert(t);
 	}
 	
+	
 	/**
 	 * Generates an initial board randomly
 	 * 
@@ -163,6 +130,7 @@ public class Driver {
 			}
 		}
 	}
+	
 	
 	/**
 	 * Generates an alternate board
@@ -214,6 +182,7 @@ public class Driver {
 		}
 	}
 	
+	
 	/**
 	 * Generates an alternate board by swapping all non-perfect tiles
 	 * 
@@ -246,6 +215,14 @@ public class Driver {
 			return altBoard;
 		return board;
 	}
+	
+	/**
+	 * Translates board score to matching edges
+	 * 
+	 * @param score Board score
+	 * @param size Board size
+	 * @return Total matching edges
+	 */
 
 	public static int scoreToEdges(int score, int size) {
 		return (score - (size*size))/2;
